@@ -34,8 +34,8 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 2. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/kmb-mcp-server.git
-cd kmb-mcp-server
+git clone git@github.com:kennyckk/mcp_hkbus.git
+cd mcp_hkbus
 ```
 
 3. Use uv to handle the python package:
