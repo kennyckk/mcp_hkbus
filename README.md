@@ -1,4 +1,5 @@
 # KMB Bus MCP Server
+[![smithery badge](https://smithery.ai/badge/@kennyckk/mcp_hkbus)](https://smithery.ai/server/@kennyckk/mcp_hkbus)
 
 A Model Context Protocol (MCP) server that provides real-time access to Hong Kong's KMB (九龍巴士) and Long Win Bus (龍運巴士) route information and arrival times. This server enables Language Models to query Hong Kong bus service information to answer user questions about bus routes, stops, and estimated arrival times.
 
@@ -24,6 +25,16 @@ This project utilizes the official KMB/LWB Open Data API:
 - uv package manager
 
 ## Installation
+
+### Installing via Smithery
+
+To install KMB Bus MCP for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@kennyckk/mcp_hkbus):
+
+```bash
+npx -y @smithery/cli install @kennyckk/mcp_hkbus --client claude
+```
+
+### Manual Installation
 
 1. First, install uv if you haven't already:
 
