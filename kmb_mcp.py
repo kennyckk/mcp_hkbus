@@ -112,7 +112,9 @@ async def get_route_stops(route: str, direction: str, service_type: str = "1") -
     """
     Get stops for a specific route
     """
-    url = f"{ROUTE_STOP_URL}/{route}/{direction}/{service_type}"
+    # Convert direction code to full form
+    direction_full = "inbound" if direction == "I" else "outbound"
+    url = f"{ROUTE_STOP_URL}/{route}/{direction_full}/{service_type}"
     response = await fetch_api(url)
     if "data" in response:
         return response["data"]
