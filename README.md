@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/kennyckk-mcp-hkbus-badge.png)](https://mseep.ai/app/kennyckk-mcp-hkbus)
+
 # KMB Bus MCP Server
 [![smithery badge](https://smithery.ai/badge/@kennyckk/mcp_hkbus)](https://smithery.ai/server/@kennyckk/mcp_hkbus)
 
