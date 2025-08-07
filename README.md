@@ -3,6 +3,10 @@
 
 A Model Context Protocol (MCP) server that provides real-time access to Hong Kong's KMB (九龍巴士) and Long Win Bus (龍運巴士) route information and arrival times. This server enables Language Models to query Hong Kong bus service information to answer user questions about bus routes, stops, and estimated arrival times.
 
+<a href="https://glama.ai/mcp/servers/@kennyckk/mcp_hkbus">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@kennyckk/mcp_hkbus/badge" alt="KMB Bus Server MCP server" />
+</a>
+
 ## Features
 
 - Real-time bus arrival information (ETA)
