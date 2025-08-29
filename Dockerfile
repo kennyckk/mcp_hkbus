@@ -10,5 +10,7 @@ COPY . /app
 # Install dependencies (excluding dev dependencies)
 RUN uv sync --no-dev
 
+ENV TRANSPORT=http
+
 # Default command to start the MCP server via stdio transport
 CMD ["uv", "--directory", "/app", "run", "kmb_mcp.py"]
