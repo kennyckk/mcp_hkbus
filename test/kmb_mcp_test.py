@@ -281,7 +281,7 @@ async def test_get_route_stops():
         
         # Verify the result
         assert result == MOCK_ROUTE_STOPS["data"]
-        mock_fetch.assert_called_once_with(f"{kmb_mcp.ROUTE_STOP_URL}/1A/O/1")
+        mock_fetch.assert_called_once_with(f"{kmb_mcp.ROUTE_STOP_URL}/1A/outbound/1")
 
 @pytest.mark.asyncio
 async def test_get_stop_details():
