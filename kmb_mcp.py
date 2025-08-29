@@ -61,21 +61,21 @@ async def get_cached_data(cache_key: str, url: str) -> Dict:
 async def get_route_list() -> List:
     """Delegate to shared implementation; keep signature for tests."""
     return await handle_utils.get_route_list(
-        get_cached_data_func=lambda key, url: get_cached_data(key, url),
+        get_cached_data_func=get_cached_data,
         route_list_url=ROUTE_LIST_URL,
     )
 
 async def get_stop_list() -> List:
     """Delegate to shared implementation; keep signature for tests."""
     return await handle_utils.get_stop_list(
-        get_cached_data_func=lambda key, url: get_cached_data(key, url),
+        get_cached_data_func=get_cached_data,
         stop_list_url=STOP_LIST_URL,
     )
 
 async def get_route_stop_list() -> List:
     """Delegate to shared implementation; keep signature for tests."""
     return await handle_utils.get_route_stop_list(
-        get_cached_data_func=lambda key, url: get_cached_data(key, url),
+        get_cached_data_func=get_cached_data,
         route_stop_list_url=ROUTE_STOP_LIST_URL,
     )
 
@@ -85,8 +85,8 @@ async def get_route_details(route: str, direction: str = None, service_type: str
         route,
         direction,
         service_type,
-        get_route_list_func=lambda: get_route_list(),
-        fetch_api_func=lambda url: fetch_api(url),
+        get_route_list_func=get_route_list,
+        fetch_api_func=fetch_api,
         route_url=ROUTE_URL,
     )
 
@@ -94,7 +94,7 @@ async def get_stop_details(stop_id: str) -> Dict:
     """Delegate to shared implementation; keep signature for tests."""
     return await handle_utils.get_stop_details(
         stop_id,
-        fetch_api_func=lambda url: fetch_api(url),
+        fetch_api_func=fetch_api,
         stop_url=STOP_URL,
     )
 
@@ -104,7 +104,7 @@ async def get_route_stops(route: str, direction: str, service_type: str = "1") -
         route,
         direction,
         service_type,
-        fetch_api_func=lambda url: fetch_api(url),
+        fetch_api_func=fetch_api,
         route_stop_url=ROUTE_STOP_URL,
     )
 
@@ -114,7 +114,7 @@ async def get_eta(stop_id: str, route: str = None, service_type: str = "1") -> L
         stop_id,
         route,
         service_type,
-        fetch_api_func=lambda url: fetch_api(url),
+        fetch_api_func=fetch_api,
         eta_url=ETA_URL,
         stop_eta_url=STOP_ETA_URL,
     )
@@ -123,14 +123,14 @@ async def find_stops_by_name(name: str) -> List:
     """Delegate to shared implementation; keep signature for tests."""
     return await handle_utils.find_stops_by_name(
         name,
-        get_stop_list_func=lambda: get_stop_list(),
+        get_stop_list_func=get_stop_list,
     )
 
 async def find_routes_by_destination(destination: str) -> List:
     """Delegate to shared implementation; keep signature for tests."""
     return await handle_utils.find_routes_by_destination(
         destination,
-        get_route_list_func=lambda: get_route_list(),
+        get_route_list_func=get_route_list,
     )
 
 @mcp.tool()
@@ -390,7 +390,7 @@ def main():
         )
 
         # Use Smithery-required PORT environment variable
-        port = int(os.environ.get("PORT", 8081))
+        port = int(os.environ.get("PORT", 8011))
         print(f"Listening on port {port}")
 
         uvicorn.run(app, host="0.0.0.0", port=port, log_level="debug")
