@@ -1,14 +1,13 @@
-# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
-
+# smithery.yaml
+runtime: "container"
+build:
+  dockerfile: "Dockerfile"           # Path to your Dockerfile
+  dockerBuildPath: "."               # Docker build context
 startCommand:
-  type: stdio
-  configSchema:
-    # JSON Schema defining the configuration options for the MCP.
+  type: "http"
+  # configSchema and exampleConfig are optional - remove if no configuration needed
+  configSchema:                      # Optional: Define configuration schema
     type: object
     default: {}
     description: Configuration for KMB Bus MCP server
-  commandFunction:
-    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
-    |-
-    (config) => ({ command: 'uv', args: ['--directory', '.', 'run', 'kmb_mcp.py'] })
   exampleConfig: {}

@@ -4,12 +4,20 @@ KMB Bus MCP Server
 
 This server provides tools to query KMB bus information through MCP.
 """
-
-import asyncio
-import json
-from typing import Dict, List, Optional, Any, Union
 import httpx
+import os
+import logging
+import uvicorn
+
+from typing import Dict, List, Optional, Any, Union
 from mcp.server.fastmcp import FastMCP
+from starlette.middleware.cors import CORSMiddleware
+from utils import handle as handle_utils
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 # Initialize MCP server
 mcp = FastMCP("kmb-bus")
@@ -38,129 +46,92 @@ cache = {
 }
 
 async def fetch_api(url: str) -> Dict:
-    """
-    Fetch data from an API endpoint
-    """
-    try:
-        response = await http_client.get(url)
-        response.raise_for_status()
-        return response.json()
-    except httpx.HTTPStatusError as e:
-        return {"error": f"HTTP error: {e}"}
-    except httpx.RequestError as e:
-        return {"error": f"Request error: {e}"}
-    except Exception as e:
-        return {"error": f"Unexpected error: {e}"}
+    """Delegate to shared implementation with injected http_client."""
+    return await handle_utils.fetch_api(url, http_client)
 
 async def get_cached_data(cache_key: str, url: str) -> Dict:
-    """
-    Get data from cache or fetch it if not available
-    """
-    if cache.get(cache_key) is None:
-        data = await fetch_api(url)
-        cache[cache_key] = data
-    return cache[cache_key]
+    """Delegate to shared implementation with injected fetch and cache."""
+    return await handle_utils.get_cached_data(
+        cache_key,
+        url,
+        fetch_api_func=fetch_api,
+        cache=cache,
+    )
 
 async def get_route_list() -> List:
-    """
-    Get list of all KMB bus routes
-    """
-    data = await get_cached_data("route_list", ROUTE_LIST_URL)
-    if "data" in data:
-        return data["data"]
-    return []
+    """Delegate to shared implementation; keep signature for tests."""
+    return await handle_utils.get_route_list(
+        get_cached_data_func=get_cached_data,
+        route_list_url=ROUTE_LIST_URL,
+    )
 
 async def get_stop_list() -> List:
-    """
-    Get list of all KMB bus stops
-    """
-    data = await get_cached_data("stop_list", STOP_LIST_URL)
-    if "data" in data:
-        return data["data"]
-    return []
+    """Delegate to shared implementation; keep signature for tests."""
+    return await handle_utils.get_stop_list(
+        get_cached_data_func=get_cached_data,
+        stop_list_url=STOP_LIST_URL,
+    )
 
 async def get_route_stop_list() -> List:
-    """
-    Get list of all route-stop combinations
-    """
-    data = await get_cached_data("route_stop_list", ROUTE_STOP_LIST_URL)
-    if "data" in data:
-        return data["data"]
-    return []
+    """Delegate to shared implementation; keep signature for tests."""
+    return await handle_utils.get_route_stop_list(
+        get_cached_data_func=get_cached_data,
+        route_stop_list_url=ROUTE_STOP_LIST_URL,
+    )
 
 async def get_route_details(route: str, direction: str = None, service_type: str = "1") -> Dict:
-    """
-    Get details for a specific route
-    """
-    if direction is None:
-        # If direction is not specified, get all directions for this route
-        routes = await get_route_list()
-        route_data = [r for r in routes if r["route"] == route]
-        return route_data
-    
-    url = f"{ROUTE_URL}/{route}/{direction}/{service_type}"
-    return await fetch_api(url)
+    """Delegate to shared implementation; keep signature for tests."""
+    return await handle_utils.get_route_details(
+        route,
+        direction,
+        service_type,
+        get_route_list_func=get_route_list,
+        fetch_api_func=fetch_api,
+        route_url=ROUTE_URL,
+    )
 
 async def get_stop_details(stop_id: str) -> Dict:
-    """
-    Get details for a specific stop
-    """
-    url = f"{STOP_URL}/{stop_id}"
-    return await fetch_api(url)
+    """Delegate to shared implementation; keep signature for tests."""
+    return await handle_utils.get_stop_details(
+        stop_id,
+        fetch_api_func=fetch_api,
+        stop_url=STOP_URL,
+    )
 
 async def get_route_stops(route: str, direction: str, service_type: str = "1") -> List:
-    """
-    Get stops for a specific route
-    """
-    # Convert direction code to full form
-    direction_full = "inbound" if direction == "I" else "outbound"
-    url = f"{ROUTE_STOP_URL}/{route}/{direction_full}/{service_type}"
-    response = await fetch_api(url)
-    if "data" in response:
-        return response["data"]
-    return []
+    """Delegate to shared implementation; keep signature for tests."""
+    return await handle_utils.get_route_stops(
+        route,
+        direction,
+        service_type,
+        fetch_api_func=fetch_api,
+        route_stop_url=ROUTE_STOP_URL,
+    )
 
 async def get_eta(stop_id: str, route: str = None, service_type: str = "1") -> List:
-    """
-    Get ETA for a stop and optionally a specific route
-    """
-    if route:
-        url = f"{ETA_URL}/{stop_id}/{route}/{service_type}"
-    else:
-        url = f"{STOP_ETA_URL}/{stop_id}"
-    
-    response = await fetch_api(url)
-    if "data" in response:
-        return response["data"]
-    return []
+    """Delegate to shared implementation; keep signature for tests."""
+    return await handle_utils.get_eta(
+        stop_id,
+        route,
+        service_type,
+        fetch_api_func=fetch_api,
+        eta_url=ETA_URL,
+        stop_eta_url=STOP_ETA_URL,
+    )
 
 async def find_stops_by_name(name: str) -> List:
-    """
-    Find stops by name (partial match)
-    """
-    stops = await get_stop_list()
-    matching_stops = []
-    
-    for stop in stops:
-        if (name.lower() in stop["name_en"].lower() or 
-            (stop.get("name_tc") and name.lower() in stop["name_tc"].lower())):
-            matching_stops.append(stop)
-    
-    return matching_stops
+    """Delegate to shared implementation; keep signature for tests."""
+    return await handle_utils.find_stops_by_name(
+        name,
+        get_stop_list_func=get_stop_list,
+    )
 
 async def find_routes_by_destination(destination: str) -> List:
-    """
-    Find routes that go to a specific destination
-    """
-    routes = await get_route_list()
-    matching_routes = []
-    
-    for route in routes:
-        if (destination.lower() in route["dest_en"].lower() or 
-            (route.get("dest_tc") and destination.lower() in route["dest_tc"].lower())):
-            matching_routes.append(route)
-    
-    return matching_routes
+    """Delegate to shared implementation; keep signature for tests."""
+    return await handle_utils.find_routes_by_destination(
+        destination,
+        get_route_list_func=get_route_list,
+    )
 
 @mcp.tool()
 async def get_next_bus(route: str, stop_name: str) -> str:
@@ -398,5 +369,38 @@ async def get_all_routes_at_stop(stop_name: str) -> str:
     
     return "\n\n".join(results)
 
+def main():
+    transport_mode = os.getenv("TRANSPORT", "stdio")
+    
+    if transport_mode == "http":
+        # HTTP mode with config extraction from URL parameters
+        logger.info("Starting HKBUS MCP server in HTTP mode...")
+        # Setup Starlette app with CORS for cross-origin requests
+        app = mcp.streamable_http_app()
+        
+        # IMPORTANT: add CORS middleware for browser based clients
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["GET", "POST", "OPTIONS"],
+            allow_headers=["*"],
+            expose_headers=["mcp-session-id", "mcp-protocol-version"],
+            max_age=86400,
+        )
+
+        # Use Smithery-required PORT environment variable
+        port = int(os.environ.get("PORT", 8011))
+        print(f"Listening on port {port}")
+
+        uvicorn.run(app, host="0.0.0.0", port=port, log_level="debug")
+    
+    else:
+        # Optional: add stdio transport for backwards compatibility
+        # You can publish this to uv for users to run locally
+        logger.info("Starting HKBUS MCP server in STDIO mode...")
+        # Run with stdio transport (default)
+        mcp.run(transport='stdio')
+
 if __name__ == "__main__":
-    mcp.run(transport='stdio')
+    main()
